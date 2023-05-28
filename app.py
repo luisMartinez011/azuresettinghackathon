@@ -2,8 +2,8 @@ import os
 import joblib
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory, url_for)
-
-
+import datetime
+import json
 app = Flask(__name__)
 
 
@@ -17,15 +17,19 @@ app = Flask(__name__)
 #     return send_from_directory(os.path.join(app.root_path, 'static'),
 #                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=["GET",'POST'])
 def index():
     classifier = joblib.load('./model.pkl')
-    resjson = request.get_json( )
-    fechaparam = resjson['fecha']
-
-
     predicciones2 = classifier.predict(steps=57)
-    return str(predicciones2[fechaparam])
+
+    base = datetime.date.today()
+    dateDict  ={}
+    for x in range(0, 5):
+        day = base - datetime.timedelta(days=x)
+        dateDict[day.strftime('%A')] =predicciones2[str(day)]
+    return json.dumps(dateDict)
+
+
 
 
 if __name__ == '__main__':
